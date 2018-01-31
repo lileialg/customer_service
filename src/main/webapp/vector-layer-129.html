@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8' />
+<title>Display a map</title>
+<meta name='viewport'
+	content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<script src='dist/mapbox-gl-dev.js'></script>
+<link href='dist/mapbox-gl.css' rel='stylesheet' />
+<style>
+body {
+	margin: 0;
+	padding: 0;
+}
+
+#map {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 100%;
+}
+</style>
+
+<script type="text/javascript">
+	var layers = [
+			{
+				"id" : "background",
+				"type" : "background",
+				"layout" : {
+
+				},
+				"paint" : {
+					"background-color" : "#000000"
+				}
+			}, {
+				"interactive" : true,
+				"layout" : {
+					"visibility" : "visible",
+					"line-cap" : "round",
+					"line-join" : "round"
+				},
+				"type" : "line",
+				"source" : "composite",
+				"id" : "id1",
+				"paint" : {
+					"line-width" : {
+						"base" : 3.5,
+						"stops" : [ [ 5, 0.75 ], [ 18, 32 ] ]
+					},
+					"line-color" : "#00ee00"
+				},
+				"source-layer" : "link"
+			}
+
+			 ]
+
+	var simple = {
+		"version" : 8,
+		"name" : "Bright",
+		"sources" : {
+			"composite" : {
+				"type" : "vector",
+				"tiles" : [ "http://192.168.4.129:18889/dc/datasource/{z}/{x}/{y}?service_id=2&layer_name=link"]
+
+			}
+		},
+		"sprite" : "http://192.168.4.129:18889/dc/sprites/sprite",
+		"glyphs" : "http://192.168.4.129:18889/dc/glyphs/{fontstack}/{range}.pbf",
+		"layers" : layers
+	};
+</script>
+</head>
+<body>
+
+	<div id='map'></div>
+	<script>
+		var map = new mapboxgl.Map({
+			container : 'map', // container id
+			style : simple, // stylesheet location
+			zoom : 12,
+			center : [ 116.808037, 39.9752 ]
+		});
+	</script>
+
+</body>
+</html>

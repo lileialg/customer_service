@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8' />
+<title>Display a map</title>
+<meta name='viewport'
+  content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<script
+  src='dist/mapbox-gl-dev.js'></script>
+<link
+  href='dist/mapbox-gl.css'
+  rel='stylesheet' />
+<style>
+body {
+  margin: 0;
+  padding: 0;
+}
+
+#map {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+}
+</style>
+
+<script type="text/javascript">
+  var simple = {
+      "version" : 8,
+      "name" : "Bright",
+      "sources" : {
+        
+      },
+      "layers" : [
+            {
+              "id" : "background",
+              "type" : "background",
+              "paint" : {
+                "background-color" : "#000000"
+              },
+              "interactive" : true
+            }]
+    };
+</script>
+</head>
+<body>
+
+  <div id='map'></div>
+  <script>
+    
+    var map = new mapboxgl.Map({
+      container : 'map', // container id
+      style : simple, // stylesheet location
+      center: [116.394085,39.91927],
+        zoom: 15
+        
+    });
+    
+    map.on('load', function () {
+      
+   
+        
+map.addSource('sanhuan',{
+'type':'geojson',
+'data':'http://localhost:8080/datasource/geojson?service_id=6&layer_name=sanhuan&cond_value=三环'
+});
+map.addLayer(
+{
+        "interactive" : true,
+        "layout" : {
+          "visibility" : "visible",
+          "line-cap" : "round",
+          "line-join" : "round"
+        },
+        "type" : "line",
+        "source" : "sanhuan",
+        "id" : "id1",
+        "paint" : {
+          "line-width" : {
+            "base" : 3.5,
+            "stops" : [ [ 5, 0.75 ], [ 18, 32 ] ]
+          },
+          "line-color" : "#ff0000"
+        }
+        
+      }
+)
+});
+	</script>
+
+</body>
+</html>
