@@ -1,10 +1,13 @@
 package custom.dao;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,13 +16,13 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class OracleDao {
-	
+
 	@Value("${html.path}")
 	private String htmlPath;
-	
+
 	@Value("${vector.url}")
 	private String vectorUrl;
-	
+
 	@Value("${geojson.url}")
 	private String geojsonUrl;
 
@@ -56,7 +59,11 @@ public class OracleDao {
 			if (is_group == 0) {
 				// 不分组
 				if (!"vector".equals(return_type))
-					sb.append(map.get("cols").toString().replace("geometry", "sdo_util.to_wktgeometry_varchar(geometry) as geometry"));
+					sb.append(map
+							.get("cols")
+							.toString()
+							.replace("geometry",
+									"sdo_util.to_wktgeometry_varchar(geometry) as geometry"));
 				else
 					sb.append(map.get("cols").toString());
 				sb.append(" from ");
@@ -90,7 +97,7 @@ public class OracleDao {
 							sb.append(Double.parseDouble(splits[0]));
 						} else {
 							// String
-							
+
 							sb.append("'");
 							if ("like".equals(cond.trim()))
 								sb.append("%");
@@ -163,29 +170,26 @@ public class OracleDao {
 					String colType = tmpMap.get("col_type").toString();
 					String cond = tmpMap.get("cond").toString();
 					String col = tmpMap.get("column_name").toString();
-					
 
-						sb.append(col);
-						sb.append(" ");
-						sb.append(cond);
-						sb.append(" ");
-						if (colType.equals("Integer")) {
-	
-							sb.append(Integer.parseInt(splits[0]));
-						} else if (colType.equals("Double")) {
-							sb.append(Double.parseDouble(splits[0]));
-						} else {
-							// String
-							sb.append("\'");
-							if ("like".equals(cond.trim()))
-								sb.append("%");
-							sb.append(splits[0]);
-							if ("like".equals(cond.trim()))
-								sb.append("%");
-							sb.append("\'");
-						}
-					
-					
+					sb.append(col);
+					sb.append(" ");
+					sb.append(cond);
+					sb.append(" ");
+					if (colType.equals("Integer")) {
+
+						sb.append(Integer.parseInt(splits[0]));
+					} else if (colType.equals("Double")) {
+						sb.append(Double.parseDouble(splits[0]));
+					} else {
+						// String
+						sb.append("\'");
+						if ("like".equals(cond.trim()))
+							sb.append("%");
+						sb.append(splits[0]);
+						if ("like".equals(cond.trim()))
+							sb.append("%");
+						sb.append("\'");
+					}
 
 					for (int i = 1; i < list2.size(); i++) {
 						sb.append(" and ");
@@ -248,189 +252,310 @@ public class OracleDao {
 		return sb.toString();
 
 	}
-	
-	
-	public List<Map<String,Object>> getGeojson(int service_pid,String cond_value){
-		
+
+	public List<Map<String, Object>> getGeojson(int service_pid,
+			String cond_value) {
+
 		String sql = this.generateSql(service_pid, cond_value);
-		
+
 		return jdbc.queryForList(sql);
-		
+
 	}
-	
-	public List<Map<String,Object>> getProtoBuf(int service_pid,String cond_value,String wkt){
-		
+
+//	public String getJsonSep(int service_pid) {
+//		String sql = "select source_name from data_service where pid=?";
+//
+//		Map<String, Object> map = jdbc.queryForMap(sql, service_pid);
+//
+//		String tab_name = map.get("source_name").toString();
+//
+//		sql = "select * from " + tab_name;
+//
+//		List<Map<String, Object>> list = jdbc.queryForList(sql);
+//
+//		JSONArray ja = new JSONArray();
+//
+//		for (Map<String, Object> m : list) {
+//			JSONObject jo = new JSONObject();
+//
+//			for (Entry<String, Object> en : m.entrySet()) {
+//				Object value = en.getValue();
+//
+//				if (value.toString().startsWith("[")) {
+//					jo.put(en.getKey(),
+//							JSONArray.fromString(en.getValue().toString()));
+//				} else if (value.toString().startsWith("{")) {
+//					jo.put(en.getKey(),
+//							JSONObject.fromString(en.getValue().toString()));
+//				} else {
+//					jo.put(en.getKey(), en.getValue());
+//				}
+//			}
+//
+//			ja.put(jo);
+//
+//		}
+//
+//		return ja.toString();
+//	}
+
+	public List<Map<String, Object>> getProtoBuf(int service_pid,
+			String cond_value, String wkt) {
+
 		String sql = this.generateSql(service_pid, cond_value);
-		
-		if (sql.indexOf(" where ")>0){
+
+		if (sql.indexOf(" where ") > 0) {
 			sql = sql + " and ";
-		}else{
-			sql = sql +" where ";
+		} else {
+			sql = sql + " where ";
 		}
 
-//		sql = sql + "  sdo_anyinteract(geometry,sdo_geometry('"
-//				+ wkt + "',8307)) = 'TRUE'";
-//		
-//		sql = "select a.*,sdo_util.to_wktgeometry_varchar(geometry) geometry2 from ("+ sql+") a ";
-		
+		// sql = sql + "  sdo_anyinteract(geometry,sdo_geometry('"
+		// + wkt + "',8307)) = 'TRUE'";
+		//
+		// sql =
+		// "select a.*,sdo_util.to_wktgeometry_varchar(geometry) geometry2 from ("+
+		// sql+") a ";
+
 		sql = sql + "  sdo_anyinteract(geometry,sdo_geometry(?,8307)) = 'TRUE'";
-//		
-		sql = "select a.*,sdo_util.to_wktgeometry_varchar(geometry) geometry2 from ("+ sql+") a ";
-		
-		return jdbc.queryForList(sql,wkt);
-		
+		//
+		sql = "select a.*,sdo_util.to_wktgeometry_varchar(geometry) geometry2 from ("
+				+ sql + ") a ";
+
+		return jdbc.queryForList(sql, wkt);
+
 	}
-	
-	//发布mapbox gl可视化
-	public void lauch_vis_mb(int sid,String cond_value){
+
+	// 发布mapbox gl可视化
+	public void lauch_vis_mb(int sid, String cond_value) {
 		String sql = "select a.service_pid,a.layer_name,a.source_name,"
 				+ "a.cond_value,a.lauch_name,b.header,b.ender,a.layer_cfg "
 				+ "from datavis_service a,datavis_mb b where a.pid=b.pid and a.sid=?";
-		
-		List<Map<String,Object>> list = jdbc.queryForList(sql,sid);
-		
-		for(Map<String,Object> map : list){
+
+		List<Map<String, Object>> list = jdbc.queryForList(sql, sid);
+
+		for (Map<String, Object> map : list) {
 			String lauch_name = map.get("lauch_name").toString();
-			
+
 			try {
-				PrintWriter out = new PrintWriter(htmlPath+lauch_name);
-				
+				PrintWriter out = new PrintWriter(htmlPath + lauch_name);
+
 				String header = map.get("header").toString();
-				
+
 				out.println(header);
-				
-				//添加source
+
+				// 添加source
 				String source_name = map.get("source_name").toString();
 				String layer_name = map.get("layer_name").toString();
-				
+
 				sql = "select return_type from data_service where pid=?";
-				
-				int service_pid = ((BigDecimal)map.get("service_pid")).intValue();
-				
-				List<Map<String,Object>> dslist = jdbc.queryForList(sql, service_pid);
-				
-				String return_type = dslist.get(0).get("return_type").toString();
-				
-				if ("vector".equals(return_type)){
-					out.println("map.addSource('"+source_name+"',{");
+
+				int service_pid = ((BigDecimal) map.get("service_pid"))
+						.intValue();
+
+				List<Map<String, Object>> dslist = jdbc.queryForList(sql,
+						service_pid);
+
+				String return_type = dslist.get(0).get("return_type")
+						.toString();
+
+				if ("vector".equals(return_type)) {
+					out.println("map.addSource('" + source_name + "',{");
 					out.println("'type':'vector',");
-					out.print("'tiles':['"+vectorUrl+"?service_id="+service_pid+"&layer_name="+layer_name+"");
-					if (cond_value!= null && cond_value.length()>0)
-						out.print("&cond_value="+cond_value);
+					out.print("'tiles':['" + vectorUrl + "?service_id="
+							+ service_pid + "&layer_name=" + layer_name + "");
+					if (cond_value != null && cond_value.length() > 0)
+						out.print("&cond_value=" + cond_value);
 					out.print("']});");
-				}else if ("geojson".equals(return_type)){
-					out.println("map.addSource('"+source_name+"',{");
+				} else if ("geojson".equals(return_type)) {
+					out.println("map.addSource('" + source_name + "',{");
 					out.println("'type':'geojson',");
-					out.print("'data':'"+geojsonUrl+"?service_id="+service_pid+"&layer_name="+layer_name+"");
-					if (cond_value!= null && cond_value.length()>0)
-						out.print("&cond_value="+cond_value);
-					
+					out.print("'data':'" + geojsonUrl + "?service_id="
+							+ service_pid + "&layer_name=" + layer_name + "");
+					if (cond_value != null && cond_value.length() > 0)
+						out.print("&cond_value=" + cond_value);
+
 					out.println("'");
 					out.println("});");
 				}
-				
-				//添加layer
+
+				// 添加layer
 				String layer_cfg = map.get("layer_cfg").toString();
 				out.println("map.addLayer(");
 				out.println(layer_cfg);
 				out.println(")");
-				
+
 				String ender = map.get("ender").toString();
 				out.println(ender);
 				out.flush();
 				out.close();
-				
+
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 	}
-	
-	
-	
-	//发布mapbox gl可视化
-	public void lauch_vis_mb_layers(int html_pid,String cond_value){
-			String sql = "select header,ender,lauch_name from datavis_html a,datavis_mb b where a.mb_pid=b.pid and a.html_pid=?";
+
+	// 发布mapbox gl可视化
+	public void lauch_vis_mb_layers(int html_pid, String cond_value) {
+		String sql = "select header,ender,lauch_name,mb_source from datavis_html a,datavis_mb b where a.mb_pid=b.pid and a.html_pid=?";
+
+		List<Map<String, Object>> list = jdbc.queryForList(sql, html_pid);
+
+		String[] splitsCondValue = cond_value != null
+				&& cond_value.length() > 0 ? cond_value.split("-") : null;
+
+		for (Map<String, Object> map : list) {
 			
-			List<Map<String,Object>> list = jdbc.queryForList(sql,html_pid);
+			String mb_source = map.get("mb_source").toString();
+			String lauch_name = map.get("lauch_name").toString();
 			
-			String[] splitsCondValue = cond_value!= null && cond_value.length()>0?cond_value.split("-"):null;
-			
-			for(Map<String,Object> map : list){
-				String lauch_name = map.get("lauch_name").toString();
+			if (mb_source!= null && mb_source.length()>0){
 				
-				try {
-					PrintWriter out = new PrintWriter(htmlPath+lauch_name);
+					 
+					String dir = htmlPath + lauch_name;
+					File fileDir = new File(dir);
+					if (!fileDir.exists())
+						fileDir.mkdirs();
 					
-					String header = map.get("header").toString();
+					File mbSourceFiles = new File(htmlPath+mb_source);
 					
-					out.println(header);
+					File[] mbfiles = mbSourceFiles.listFiles();
 					
-					String layerSql = "select layer_name,source_name,service_pid,layer_cfg from datavis_layer where html_pid=? order by order_num";
+					sql = "select a.source_name from data_service a,datavis_layer b where a.pid=b.service_pid and b.html_pid=? order by b.order_num";
 					
-					List<Map<String,Object>> listLayers = jdbc.queryForList(layerSql, html_pid);
+					List<Map<String,Object>> list_source = jdbc.queryForList(sql, html_pid);
 					
-					for(int i=0;i<listLayers.size();i++){
-						String layerCondValue = null;
+					for(File f: mbfiles){
+						String file_name = f.getName();
 						
-						if (splitsCondValue!=null && splitsCondValue.length-1>=i)
-							layerCondValue = splitsCondValue[i].trim();
-						
-						Map<String,Object> layerMap = listLayers.get(i);
-						
-						//添加source
-						String source_name = layerMap.get("source_name").toString();
-						String layer_name = layerMap.get("layer_name").toString();
-						
-						sql = "select return_type from data_service where pid=?";
-						
-						int service_pid = ((BigDecimal)layerMap.get("service_pid")).intValue();
-						
-						List<Map<String,Object>> dslist = jdbc.queryForList(sql, service_pid);
-						
-						String return_type = dslist.get(0).get("return_type").toString();
-						
-						if ("vector".equals(return_type)){
-							out.println("map.addSource('"+source_name+"',{");
-							out.println("'type':'vector',");
-							out.print("'tiles':['"+vectorUrl+"?service_id="+service_pid+"&layer_name="+layer_name+"");
-							if (layerCondValue!= null && layerCondValue.length()>0)
-								out.print("&cond_value="+layerCondValue);
-							out.print("']});");
-						}else if ("geojson".equals(return_type)){
-							out.println("map.addSource('"+source_name+"',{");
-							out.println("'type':'geojson',");
-							out.print("'data':'"+geojsonUrl+"?service_id="+service_pid+"&layer_name="+layer_name+"");
-							if (layerCondValue!= null && layerCondValue.length()>0)
-								out.print("&cond_value="+layerCondValue);
+						try {
+							PrintWriter out = new PrintWriter(htmlPath+lauch_name+"/"+file_name);
 							
-							out.println("'");
-							out.println("});");
+							Scanner scanner = new Scanner(new FileInputStream(f));
+							
+							String c = "1";
+							
+							String key = "1111111111";
+							
+							int idx = 0;
+							
+							while(scanner.hasNextLine()){
+								
+								String line = scanner.nextLine();
+								
+								if (line.indexOf(key)>0){
+									
+									line = line.replace(key, list_source.get(idx).get("source_name").toString());
+								
+									int nci = Integer.parseInt(c) + 1;
+									
+									key = key.replaceAll(c, String.valueOf(nci));
+									
+									idx++;
+									
+									c =  String.valueOf(nci);
+								}
+								
+								out.println(line);
+								
+							}
+							
+							scanner.close();
+							
+							out.flush();
+							
+							out.close();
+						} catch (FileNotFoundException e) {
+							e.printStackTrace();
 						}
-						
-						//添加layer
-						String layer_cfg = layerMap.get("layer_cfg").toString();
-						out.println("map.addLayer(");
-						out.println(layer_cfg);
-						out.println(")");
-						
-						
 					}
-					
-					
-					
-					
-					String ender = map.get("ender").toString();
-					out.println(ender);
-					out.flush();
-					out.close();
-					
-				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				
+				
+				return;
+			}
+			
+			
+
+			try {
+				PrintWriter out = new PrintWriter(htmlPath + lauch_name);
+
+				String header = map.get("header").toString();
+
+				out.println(header);
+
+				String layerSql = "select layer_name,source_name,service_pid,layer_cfg from datavis_layer where html_pid=? order by order_num";
+
+				List<Map<String, Object>> listLayers = jdbc.queryForList(
+						layerSql, html_pid);
+
+				for (int i = 0; i < listLayers.size(); i++) {
+					String layerCondValue = null;
+
+					if (splitsCondValue != null
+							&& splitsCondValue.length - 1 >= i)
+						layerCondValue = splitsCondValue[i].trim();
+
+					Map<String, Object> layerMap = listLayers.get(i);
+
+					// 添加source
+					String source_name = layerMap.get("source_name").toString();
+					String layer_name = layerMap.get("layer_name").toString();
+
+					sql = "select return_type from data_service where pid=?";
+
+					int service_pid = ((BigDecimal) layerMap.get("service_pid"))
+							.intValue();
+
+					List<Map<String, Object>> dslist = jdbc.queryForList(sql,
+							service_pid);
+
+					String return_type = dslist.get(0).get("return_type")
+							.toString();
+
+					if ("vector".equals(return_type)) {
+						out.println("map.addSource('" + source_name + "',{");
+						out.println("'type':'vector',");
+						out.print("'tiles':['" + vectorUrl + "?service_id="
+								+ service_pid + "&layer_name=" + layer_name
+								+ "");
+						if (layerCondValue != null
+								&& layerCondValue.length() > 0)
+							out.print("&cond_value=" + layerCondValue);
+						out.print("']});");
+					} else if ("geojson".equals(return_type)) {
+						out.println("map.addSource('" + source_name + "',{");
+						out.println("'type':'geojson',");
+						out.print("'data':'" + geojsonUrl + "?service_id="
+								+ service_pid + "&layer_name=" + layer_name
+								+ "");
+						if (layerCondValue != null
+								&& layerCondValue.length() > 0)
+							out.print("&cond_value=" + layerCondValue);
+
+						out.println("'");
+						out.println("});");
+					}
+
+					// 添加layer
+					String layer_cfg = layerMap.get("layer_cfg").toString();
+					out.println("map.addLayer(");
+					out.println(layer_cfg);
+					out.println(")");
+
 				}
+
+				String ender = map.get("ender").toString();
+				out.println(ender);
+				out.flush();
+				out.close();
+
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
+	}
 
 }

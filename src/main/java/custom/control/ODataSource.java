@@ -92,6 +92,12 @@ public class ODataSource {
 	}
 	
 	
+//	@RequestMapping(value = "/collection")
+//	public String collection(int service_id){
+//		return dao.getJsonSep(service_id);
+//	}
+	
+	
 	@RequestMapping(value = "/{z}/{x}/{y}",produces = "aapplication/x-protobuf")
 	public byte[] getSum(@PathVariable int x, @PathVariable int y,
 			@PathVariable int z,int service_id,String cond_value,String layer_name) {
