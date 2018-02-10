@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Bootstrap 实例 - 基本的表格</title>
+<link rel="stylesheet"
+	href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+<script
+	src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+<script
+	src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<script type="text/javascript"
+	src="http://echarts.baidu.com/gallery/vendors/echarts/echarts.min.js"></script>
+<script type="text/javascript"
+	src="http://echarts.baidu.com/gallery/vendors/echarts-gl/echarts-gl.min.js"></script>
+<script type="text/javascript"
+	src="http://echarts.baidu.com/gallery/vendors/echarts-stat/ecStat.min.js"></script>
+<script type="text/javascript"
+	src="http://echarts.baidu.com/gallery/vendors/echarts/extension/dataTool.min.js"></script>
+<script type="text/javascript"
+	src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/china.js"></script>
+<script type="text/javascript"
+	src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/world.js"></script>
+<script type="text/javascript"
+	src="http://api.map.baidu.com/api?v=2.0&ak=ZUONbpqGBsYGXNIYHicvbAbM"></script>
+<script type="text/javascript"
+	src="http://echarts.baidu.com/gallery/vendors/echarts/extension/bmap.min.js"></script>
+<script type="text/javascript"
+	src="http://echarts.baidu.com/gallery/vendors/simplex.js"></script>
+</head>
+<body>
+
+	<nav class="navbar navbar-default" role="navigation">
+		<div class="container-fluid">
+
+			<div>
+				<ul class="nav navbar-nav">
+					<li class="active"><a href="hello.html">iOS</a></li>
+					<li><a href="#">SVN</a></li>
+					<li><a href="#">SVN</a></li>
+					<li><a href="#">SVN</a></li>
+					<li><a href="#">SVN</a></li>
+					<li><a href="#">SVN</a></li>
+					<li><a href="#">SVN</a></li>
+					<li><a href="#">SVN</a></li>
+
+				</ul>
+			</div>
+		</div>
+	</nav>
+	<div class="container">
+		<div class="jumbotron" style="height: 500px;" id="map">
+			
+		</div>
+
+		<table class="table" id="tab1">
+			<caption>基本的表格布局</caption>
+			<thead>
+				<tr>
+					<th>名称</th>
+					<th>城市</th>
+				</tr>
+			</thead>
+			<tbody id="tbody1">
+				<tr>
+					<td>Tanmay</td>
+					<td>Bangalore</td>
+				</tr>
+				<tr id="abc">
+					<td>Sachin</td>
+					<td>Mumbai</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<script type="text/javascript">
+	var dom = document.getElementById("map");
+	var myChart = echarts.init(dom);
+	var app = {};
+	option = null;
+	app.title = '极坐标系下的堆叠柱状图';
+
+	option = {
+		angleAxis : {},
+		radiusAxis : {
+			type : 'category',
+			data : [ '周一', '周二', '周三', '周四' ],
+			z : 10
+		},
+		polar : {},
+		series : [ {
+			type : 'bar',
+			data : [ 1, 2, 3, 4 ],
+			coordinateSystem : 'polar',
+			name : 'A',
+			stack : 'a'
+		}, {
+			type : 'bar',
+			data : [ 2, 4, 6, 8 ],
+			coordinateSystem : 'polar',
+			name : 'B',
+			stack : 'a'
+		}, {
+			type : 'bar',
+			data : [ 1, 2, 3, 4 ],
+			coordinateSystem : 'polar',
+			name : 'C',
+			stack : 'a'
+		} ],
+		legend : {
+			show : true,
+			data : [ 'A', 'B', 'C' ]
+		}
+	};
+	;
+	if (option && typeof option === "object") {
+		myChart.setOption(option, true);
+	}
+	</script>
+</body>
+</html>

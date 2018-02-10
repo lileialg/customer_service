@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8' />
+<title>Display a map</title>
+<meta name='viewport'
+	content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<script src='../dist/mapbox-gl-dev.js'></script>
+<link href='../dist/mapbox-gl.css' rel='stylesheet' />
+<link rel="stylesheet"
+	href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+<script
+	src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+<script
+	src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<style>
+body {
+	margin: 0;
+	padding: 0;
+}
+
+#map {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 100%;
+}
+
+.map-overlay {
+	font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+	position: absolute;
+	width: 250px;
+	top: 0;
+	left: 0;
+	padding: 3px;
+}
+
+.map-overlay .map-overlay-inner {
+	background-color: #fff;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.10);
+	border-radius: 3px;
+	padding: 10px;
+	margin-bottom: 10px;
+}
+
+.map-overlay-inner fieldset {
+	border: none;
+	padding: 0;
+	margin: 0 0 10px;
+}
+
+.map-overlay-inner fieldset:last-child {
+	margin: 0;
+}
+
+.map-overlay-inner select {
+	width: 100%;
+}
+
+.map-overlay-inner label {
+	display: block;
+	font-weight: bold;
+	margin: 0 0 5px;
+}
+
+.map-overlay-inner button {
+	display: inline-block;
+	width: 36px;
+	height: 20px;
+	border: none;
+	cursor: pointer;
+}
+
+.map-overlay-inner button:focus {
+	outline: none;
+}
+
+.map-overlay-inner button:hover {
+	box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.10);
+}
+</style>
+
+
+</head>
+<body>
+
+	<div id='map'></div>
+	<div class='map-overlay top'>
+		<div class='map-overlay-inner'>
+			<input type="button" id="release" value="发布"/>
+			<span id="vis_address"></span>
+			<table id="adjust_param" border=1>
+
+			</table>
+		</div>
+	</div>
+	<script>
+	
+	
+
+	var layers = {}
+	var styles = []
+	var map = {}
+	function paint_change(e){
+		var ps = (e.id).split("_")
+		var layer_id = ps[0]
+		var indx = parseInt(ps[1])
+		var pname = ps[2]
+		console.log(pname)
+		
+		eval("styles[indx].paint['"+pname+"']=JSON.parse(e.value)")
+		
+		map.setPaintProperty(layer_id,pname,JSON.parse(e.value))
+	}
+	
+	
+	
+		function getUrlParam(name) {
+			var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+			var r = window.location.search.substr(1).match(reg); //匹配目标参数
+			if (r != null)
+				return unescape(r[2]);
+			return null; //返回参数值
+		}
+
+		var mb_id = getUrlParam("mb_id")
+		var source_id = getUrlParam("source_id")
+		var style_id = getUrlParam("style_id")
+
+		var mystyle = {}
+		
+		var mylayers = []
+		
+		//var my_source_name = ""
+		var my_source_value = {}
+
+		var source_name = ""
+		
+			$("#release").on("click",function(){
+				console.log(mystyle)
+				
+				var tmpsourceobj = {}
+				tmpsourceobj.my_source_name = source_name
+				tmpsourceobj.my_source_value = my_source_value
+				
+				console.log(tmpsourceobj)
+				
+				console.log(mylayers)
+				
+				
+				$.post("http://localhost:8080/cj/release_vis",{
+					ditu_style:JSON.stringify(mystyle),
+					data_source:JSON.stringify(tmpsourceobj),
+					layers: JSON.stringify(mylayers)
+				},function(r){
+					$("#vis_address").html("<a href='"+r.address+"' target='_blank'>打开</a>")
+				})
+				
+			})
+
+		$.get("http://localhost:8080/cj/get_bg_cfg?id=" + mb_id, function(r) {
+
+			mystyle = JSON.parse(r.CFG)
+
+			map = new mapboxgl.Map({
+				container : 'map', // container id
+				style : mystyle, // stylesheet location
+				center : [ -120, 50 ],
+				zoom : 2
+
+			});
+			
+
+
+			$.get("http://localhost:8080/cj/get_source?id=" + source_id,
+					function(s) {
+
+						var return_type = s.RETURN_TYPE
+						source_name = s.SOURCE_NAME
+						if (return_type === "geojson") {
+							map.addSource(s.SOURCE_NAME, {
+								"type" : "geojson",
+								"data" : s.URL
+							});
+							
+							my_source_value = {
+									"type" : "geojson",
+									"data" : s.URL
+								}
+						} else if (return_type === "vector") {
+
+						}
+
+						$.get(
+								"http://localhost:8080/datasource/style?style_pid="
+										+ style_id, function(result) {
+
+									 layers = JSON.parse(result)
+
+									 styles = layers.styles
+
+									var style_row = 0
+
+									console.log(layers)
+
+									styles.forEach(function(layer) {
+										layer.source = source_name
+										map.addLayer(layer)
+										
+										mylayers.push(layer)
+									})
+
+									
+									
+									styles.forEach(function(r){
+										
+										
+										
+										$.each(r,function(key,value){
+											
+											if (key === "paint"){
+												$.each(value,function(pkey,pvalue){
+													
+													$("#adjust_param").append("<tr><td>"+pkey+"</td><td><input type='text' id='"+r.id+"_"+style_row+"_"+pkey+"' value='"+JSON.stringify(pvalue)+"' onblur='paint_change(this)'/></td></tr>")
+												})
+											}else{
+											
+												$("#adjust_param").append("<tr><td>"+key+"</td><td><input type='text' value='"+JSON.stringify(value)+"'/></td></tr>")
+											
+											}
+										})
+										
+										$("#adjust_param").append("<tr><td></td><td></td></tr>")
+										
+										style_row++
+										
+									})
+									
+									 
+
+								})
+
+					})
+
+			map.on('load', function() {
+
+			});
+
+		})
+	</script>
+
+</body>
+</html>

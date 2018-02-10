@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8' />
+<title>Display a map</title>
+<meta name='viewport'
+	content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<script
+	src='dist/mapbox-gl-dev.js'></script>
+<link
+	href='dist/mapbox-gl.css'
+	rel='stylesheet' />
+<style>
+body {
+	margin: 0;
+	padding: 0;
+}
+
+#map {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 100%;
+}
+</style>
+
+<script type="text/javascript">
+	var simple = {
+			"version" : 8,
+			"name" : "Bright",
+			"sources" : {
+				"mp":{
+		            "type": "raster",
+		            "tiles": ["https://a.tiles.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}@2x.webp?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA"],
+		            "tileSize": 256
+		        }
+			},
+			"layers" : [
+						{
+							"id" : "background",
+							"type" : "background",
+							"paint" : {
+								"background-color" : "#654321"
+							},
+							"interactive" : true
+						},{
+					        "id": "route",
+					        'type': 'raster',
+					        "source":'mp',
+					        'paint': {}
+					    }]
+		};
+</script>
+</head>
+<body>
+
+	<div id='map'></div>
+	<script>
+		
+		var map = new mapboxgl.Map({
+			container : 'map', // container id
+			style : simple, // stylesheet location
+			center: [116.394085,39.91927],
+    		zoom: 12
+    		
+		});
+		
+
+	</script>
+
+</body>
+</html>

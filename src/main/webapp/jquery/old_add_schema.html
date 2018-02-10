@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title></title>
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script type="text/javascript">
+	$(function() {
+		//获取表格的行数
+		var tabRowLen = $("table tbody tr").length;
+
+		var rows = 0;
+
+		$("#submit").on("click", function() {
+			var arr = []
+			for (var r = 1; r <= rows; r++) {
+				//alert($("input#name"+r).val())
+				var obj = {}
+				obj.attr_name = $("input#name" + r).val()
+				obj.attr_type = $("input#type" + r).val()
+				arr.push(obj)
+			}
+			
+			console.log(arr.toString())
+
+			$.post("http://localhost:8080/cj/test",
+				    {
+				      tab_name:$("#tab_name").val(),
+				      attrs:JSON.stringify(arr)
+				    },
+				    function(data,status){
+				      alert("数据：" + data + "\n状态：" + status);
+				    });
+		})
+
+		//点击add按钮时，
+		$("#add")
+				.on(
+						"click",
+						function() {
+							//获取表格的行数
+							tabRowLen = $("table tbody tr").length;
+							var index = tabRowLen - 1;
+
+							rows = rows + 1;
+
+							$("#tab")
+									.append(
+											"<tr>"
+													+ "<td><input type='text' class='form-control input-sm' id='name"+rows+"'/></td>"
+													+ "<td><input type='text' class='form-control input-sm' class='attr_type' id='type"+rows+"'/></td>"
+													+ "<td><input type='button' class='add' value='delete ' /></td></tr>");
+							//删除一行
+							$(".add").on("click", function() {
+								$(this).parents("tr").remove();
+							});
+							//}
+							//keyup事件
+							$("table input").on("keyup", function() {
+								//验证是否有空值
+								//IsNull(index);
+							});
+						});
+
+		function IsNull(trIndex) {
+			var result = true;
+			debugger;
+			//遍历表格的input
+			$("table tbody input").each(function(trIndex) {
+				//判断是否存在空值
+				if ($("table tbody input")[trIndex].value == "") {
+					//提示空值
+					result = false;
+					$(this).next().html("required");
+				}
+				//不为空
+				else {
+					//清空提示信息
+					$(this).next().html("");
+				}
+			});
+			return result;
+		}
+		;
+	});
+</script>
+<style type="text/css">
+.table-responsive {
+	min-height: .01%;
+	overflow-x: auto;
+	margin-left: 30px;
+	margin-top: 40px;
+	float: left;
+}
+
+.table-responsive_left {
+	min-height: .01%;
+	overflow-x: auto;
+	margin-left: 20px;
+	width: 280px;
+	margin-top: 40px;
+	float: left;
+}
+
+.table-bordered {
+	border: 1px solid #ddd;
+}
+
+.table {
+	width: 800px;
+	max-width: 100%;
+	margin-bottom: 20px;
+}
+
+.table1 {
+	width: 250px;
+	max-width: 100%;
+	margin-bottom: 20px;
+}
+
+table {
+	background-color: transparent;
+}
+
+table {
+	border-spacing: 0;
+	border-collapse: collapse;
+}
+
+.form-control {
+	display: block;
+	width: 100%;
+	height: 20px;
+	font-size: 14px;
+	line-height: 1.42857143;
+	color: #555;
+	background-color: #fff;
+	background-image: none;
+	border: 1px solid #ccc;
+}
+
+a{ text-decoration: none;}
+
+a:link {color: blue}
+a:visited {color: blue}            
+a:hover {color: blue}             
+a:active {color: blue}
+</style>
+</head>
+<body>
+	<div id='menu' class="table-responsive_left">
+		<table  class="table1 table-bordered table-striped">
+			<tr>
+				<td><a href="#">上传数据源schema</a></td>
+			</tr>
+			<tr>
+				<td><a href="#">定制数据融合规则</a></td>
+			</tr>
+			<tr>
+				<td><a href="#">提交数据融合任务</a></td>
+			</tr>
+			<tr>
+				<td><a href="#">任务列表</a></td>
+			</tr>
+			<tr>
+				<td><a href="#">定制数据服务</a></td>
+			</tr>
+			<tr>
+				<td><a href="#">服务列表</a></td>
+			</tr>
+			<tr>
+				<td><a href="#">底图模板列表</a></td>
+			</tr>
+			<tr>
+				<td><a href="#">渲染模板列表</a></td>
+			</tr>
+			<tr>
+				<td><a href="#">定制可视化</a></td>
+			</tr>
+			<tr>
+				<td><a href="#">可视化列表</a></td>
+			</tr>
+		</table>
+	</div>
+	<div id='add_tab' class="table-responsive">
+		<table id="tab" class="table table-bordered table-striped" border=1>
+			<thead>
+				<tr>
+					<th width="25%">属性名称</th>
+					<th width="50%">属性类型</th>
+					<th width="25%">名称: <input type='text' id='tab_name' size=10 />
+				</tr>
+			</thead>
+			<tbody id='tbody'></tbody>
+		</table>
+
+		<table>
+			<thead>
+				<tr>
+					<th><input type="button" id="add" value="添加属性 " /></th>
+					<th><input type="button" id="submit" value="提交 " /></th>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+	</div>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Bootstrap 实例 - 基本的表格</title>
+<link rel="stylesheet"
+	href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+<script
+	src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+<script
+	src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	
+<script type="text/javascript">
+	function select_tab(stab) {
+		var tab_name = stab.value
+		
+		$("#tbody1 tr").remove()
+
+		$
+				.get(
+						"http://localhost:8080/datasource/struct?name="
+								+ tab_name,
+						function(row) {
+							row
+									.forEach(function(c) {
+										$("#tbody1")
+												.append(
+														"<tr><td>"
+																+ c.COLUMN_NAME
+																+ "</td><td>"
+																+ c.DATA_TYPE
+																+ "</td><td><input type='text' id='"+c.COLUMN_NAME+"_filter'/></td><td><input type='checkbox' name='choose_column' value='"+c.COLUMN_NAME+"'/></td></tr>");
+									})
+						})
+	}
+</script>	
+	
+</head>
+<body>
+
+	<nav class="navbar navbar-default" role="navigation">
+		<div class="container-fluid">
+
+			<div>
+				<ul class="nav navbar-nav">
+					<li><a href="./add_schema.html">添加schema</a></li>
+					<li><a href="./custom_data.html">定制接入数据</a></li>
+					<li><a href="./list_task.html">任务列表</a></li>
+					<li><a href="./list_data.html">数据列表</a></li>
+					<li><a href="./custom_service.html">定制服务</a></li>
+					<li><a href="./list_service.html">服务列表</a></li>
+					<li><a href="./list_bg_mb.html">底图模板列表</a></li>
+					<li><a href="./list_style.html">样式模板</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+	<div class="container">
+
+
+		<table class="table" id="tab1" style="width: 90%;">
+			<caption>添加数据源表结构,表名称：<select id="tabs" onchange="select_tab(this)"><option
+						value="xuanze">选择表</option></select></caption>
+			<thead>
+				<tr>
+					<th>名称</th>
+					<th>类型</th>
+					<th>过滤</th>
+					<th>选择</th>
+					<th>排序</th>
+					<th>分组</th>
+					<th>统计</th>
+				</tr>
+			</thead>
+			<tbody id="tbody1">
+			
+
+			</tbody>
+		</table>
+
+		<table class="table" id="tab2" style="width: 30%;">
+			<caption>服务结构类型，服务描述<input type="text" id="describe"/></caption>
+			<thead>
+				<tr>
+					<th>描述</th>
+					<th>选择</th>
+				</tr>
+			</thead>
+			<tbody id="tbody2">
+				<tr>
+					<th>Vector</th>
+					<th><input type="radio" name="sctype" value="vector"></th>
+				</tr>
+				<tr>
+					<th>Geojson</th>
+					<th><input type="radio" name="sctype" value="geojson"></th>
+				</tr>
+				<tr>
+					<th>Json</th>
+					<th><input type="radio" name="sctype"  value="json"></th>
+				</tr>
+				<tr>
+					<th>Raster</th>
+					<th><input type="radio" name="sctype" value="raster"></th>
+				</tr>
+				<tr>
+					<th>Xml</th>
+					<th><input type="radio" name="sctype" value="xml"></th>
+				</tr>
+				<tr>
+					<th>Bin</th>
+					<th><input type="radio" name="sctype" value="bin"></th>
+				</tr>
+			</tbody>
+		</table>
+
+		<button id="fat-btn" class="btn" data-loading-text="" type="button">
+			提交</button>
+	</div>
+	<script type="text/javascript">
+	var tab_name = ""
+		var describe = ""
+		var attrs = []
+	
+		$(function() {
+			//获取url中的参数
+			function getUrlParam(name) {
+				var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+				var r = window.location.search.substr(1).match(reg); //匹配目标参数
+				if (r != null)
+					return unescape(r[2]);
+				return null; //返回参数值
+			}
+			
+			$.get("http://localhost:8080/datasource/ds", function(result) {
+
+				result.forEach(function(r) {
+
+					$("#tabs").append(
+							"<option value='"+r.TAB_NAME+"'>" + r.TAB_NAME
+									+ "</option>")
+
+				})
+			})
+			
+			
+			
+			
+			
+			
+			
+
+			var arr = []
+			$("#fat-btn").on('click', function() {
+
+				var sctype = $("input[name='sctype']:checked").val();
+				  
+				 
+				 var checkedArray = []
+				 $('[name=choose_column]:checkbox:checked').each(function() {
+					                      checkedArray.push($(this).val());
+					                      
+					                  });
+				 
+				var tab_name = $("#tabs").val()
+				
+				var obj = {}
+				obj.return_type = sctype
+				obj.cols = checkedArray
+				obj.source_name = tab_name
+				obj.describe = $("#describe").val()
+				
+				$.post("http://localhost:8080/cj/add_service",{
+					json:JSON.stringify(obj)
+				},function(r){
+					alert(r.result)
+				})
+			}
+
+			)
+
+		});
+	</script>
+</body>
+</html>

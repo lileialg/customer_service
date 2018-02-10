@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Bootstrap 实例 - 基本的表格</title>
+<link rel="stylesheet"
+	href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+<script
+	src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+<script
+	src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+	function select_tab(stab) {
+		var tab_name = stab.value
+		
+		$("#tbody1 tr").remove()
+
+		$
+				.get(
+						"http://localhost:8080/datasource/struct?name="
+								+ tab_name,
+						function(row) {
+							row
+									.forEach(function(c) {
+										$("#tbody1")
+												.append(
+														"<tr><td>"
+																+ c.COLUMN_NAME
+																+ "</td><td>"
+																+ c.DATA_TYPE
+																+ "</td><td><input type='text' id='"+c.COLUMN_NAME+"_filter'/></td><td><input type='text' id='"+c.COLUMN_NAME+"_trans'/></td></tr>");
+									})
+						})
+	}
+</script>
+</head>
+
+<body>
+
+	<nav class="navbar navbar-default" role="navigation">
+		<div class="container-fluid">
+
+			<div>
+				<ul class="nav navbar-nav">
+					<li><a href="./add_schema.html">添加schema</a></li>
+					<li><a href="./custom_data.html">定制接入数据</a></li>
+					<li><a href="./list_task.html">任务列表</a></li>
+					<li><a href="./list_data.html">数据列表</a></li>
+					<li><a href="./custom_service.html">定制服务</a></li>
+					<li><a href="./list_service.html">服务列表</a></li>
+					<li><a href="./list_bg_mb.html">底图模板列表</a></li>
+					<li><a href="./list_style.html">样式模板</a></li>
+					<li><a href="./custom_vis.html">定制可视化</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+	<div class="container">
+
+
+		<table class="table" id="tab1" style="width: 60%;">
+			<caption>
+				添加数据源表结构,表名称：<select id="tabs" onchange="select_tab(this)"><option
+						value="xuanze">选择表</option></select>
+			</caption>
+			<thead>
+				<tr>
+					<th>名称</th>
+					<th>类型</th>
+					<th>过滤</th>
+					<th>转换</th>
+				</tr>
+			</thead>
+			<tbody id="tbody1">
+
+
+			</tbody>
+		</table>
+
+		<table class="table" id="tab2" style="width: 30%;">
+			<caption>地址信息</caption>
+			<thead>
+				<tr>
+					<th>数据库类型</th>
+					<th><select><option>oracle</option><option>mysql</option><option>postgresql</option></select></th>
+				</tr>
+				<tr>
+					<th>JDBC URL</th>
+					<th>
+						<input type="text" id="jdbc_url"/>
+					</th>
+				</tr>
+				<tr>
+					<th>用户名</th>
+					<th>
+						<input type="text" id="username"/>
+					</th>
+				</tr>
+				<tr>
+					<th>密码</th>
+					<th>
+						<input type="text" id="password"/>
+					</th>
+				</tr>
+				<tr>
+					<th>源表名称</th>
+					<th>
+						<input type="text" id="source_tab_name"/>
+					</th>
+				</tr>
+				
+			</thead>
+			<tbody id="tbody1">
+
+
+			</tbody>
+		</table>
+
+		<button id="fat-btn" class="btn" data-loading-text="" type="button">
+			提交</button>
+	</div>
+	<script type="text/javascript">
+		var tab_name = ""
+		var describe = ""
+		var attrs = []
+
+		$(function() {
+
+			//http://localhost:8080/datasource/ds
+
+			$.get("http://localhost:8080/datasource/ds", function(result) {
+
+				result.forEach(function(r) {
+
+					$("#tabs").append(
+							"<option value='"+r.TAB_NAME+"'>" + r.TAB_NAME
+									+ "</option>")
+
+				})
+			})
+
+			//获取url中的参数
+			function getUrlParam(name) {
+				var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+				var r = window.location.search.substr(1).match(reg); //匹配目标参数
+				if (r != null)
+					return unescape(r[2]);
+				return null; //返回参数值
+			}
+
+			var arr = []
+			$("#fat-btn").on('click', function() {
+
+				var jdbc_url = $("#jdbc_url").val();
+				var username = $("#username").val()
+				var password = $("#password").val()
+				var source_tab_name= $("#source_tab_name").val()
+				
+				var obj = {}
+				obj.jdbc_url = jdbc_url
+				obj.username = username
+				obj.password = password
+				obj.source_tab_name = source_tab_name
+				obj.tab_name = $("#tabs").val()
+				
+				$.post("http://localhost:8080/cj/custom_data",{
+					db_info:JSON.stringify(obj)
+				},function(result){
+					alert(result.result)
+				})
+			}
+
+			)
+
+		});
+	</script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Bootstrap 实例 - 基本的表格</title>
+<link rel="stylesheet"
+	href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+<script
+	src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+<script
+	src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+	<nav class="navbar navbar-default" role="navigation">
+		<div class="container-fluid">
+
+			<div>
+				<ul class="nav navbar-nav">
+					<li><a href="./add_schema.html">添加schema</a></li>
+					<li><a href="./custom_data.html">定制接入数据</a></li>
+					<li><a href="./list_task.html">任务列表</a></li>
+					<li><a href="./list_data.html">数据列表</a></li>
+					<li><a href="./custom_service.html">定制服务</a></li>
+					<li><a href="./list_service.html">服务列表</a></li>
+					<li><a href="./list_bg_mb.html">底图模板列表</a></li>
+					<li><a href="./list_style.html">样式模板</a></li>
+					<li><a href="./custom_vis.html">定制可视化</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+	<div class="container">
+
+
+		<table class="table" id="tab1" style="width: 60%;">
+			<caption>
+				添加数据源表结构,表名称：<input type="text" id="tab_name" />
+			</caption>
+			<thead>
+				<tr>
+					<th>名称</th>
+					<th>类型</th>
+				</tr>
+			</thead>
+			<tbody id="tbody1">
+
+
+			</tbody>
+		</table>
+		<button id="add_row" class="btn" data-loading-text="" type="button">
+			添加行</button>
+		<button id="fat-btn" class="btn" data-loading-text="" type="button">
+			提交</button>
+	</div>
+	<script type="text/javascript">
+		$(function() {
+			var rowid = 1
+
+			$("#add_row")
+					.on(
+							'click',
+							function() {
+								$("#tbody1")
+										.append(
+												" <tr id='row"
+														+ rowid
+														+ "' ondblclick='$(this).remove()'><td><input type='text' id='name"+rowid+"'></td><td><input type='text' id='type"
+														+ rowid + "'</td></tr>");
+								rowid++;
+							})
+
+			$("#fat-btn").on('click', function() {
+
+				var arr = []
+				for (var r = 1; r < rowid; r++) {
+					if ($("#name" + r).length > 0) {
+						var obj = {}
+						obj.name = $("#name" + r).val()
+						obj.type = $("#type" + r).val()
+						arr.push(obj)
+					}
+				}
+
+				var schema = {}
+				schema.tab_name = $("#tab_name").val()
+				schema.attrs = arr
+
+				$.post("http://localhost:8080/cj/add_schema", {
+					json : JSON.stringify(schema)
+				}, function(result) {
+					alert(result.result)
+				})
+			}
+
+			)
+
+		});
+	</script>
+</body>
+</html>

@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -13,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 
 @Repository
 public class OracleDao {
@@ -28,6 +32,145 @@ public class OracleDao {
 
 	@Autowired
 	protected JdbcTemplate jdbc;
+	
+	
+	public Map<String,Object> get_source(long pid){
+		String sql = "select * from data_service where pid=?";
+		
+		Map<String,Object> m = jdbc.queryForMap(sql, pid);
+		
+		String return_type = m.get("RETURN_TYPE").toString();
+		
+		if ("geojson".equals(return_type)){
+			m.put("URL", "http://localhost:8080/datasource/geojson?service_id="+m.get("PID"));
+		}else if("json".equals(return_type)){
+			m.put("URL", "http://localhost:8080/datasource/json?service_id="+m.get("PID"));
+		}else if("vector".equals(return_type)){
+			m.put("URL", "http://localhost:8080/datasource/{z}/{x}/{y}?service_id="+m.get("PID")+"&layer_name="+m.get("source_name"));
+		}
+		
+		return m;
+		
+	}
+	
+	public Map<String,Object> get_bg_cfg(long pid){
+		String sql = "select * from datavis_mb where pid=?";
+		
+		return jdbc.queryForMap(sql, pid);
+		
+	}
+	
+	
+	public List<Map<String,Object>> list_bg_mb(){
+		String sql = "select * from datavis_mb where header is not null";
+		
+		return jdbc.queryForList(sql);
+	}
+	
+	public List<Map<String,Object>> list_style_mb(){
+		String sql = "select * from datavis_style";
+		
+		return jdbc.queryForList(sql);
+	}
+	
+	
+	public List<Map<String,Object>> list_service(){
+		String sql = "select * from data_service where return_type is not null";
+		
+		List<Map<String,Object>> list = jdbc.queryForList(sql);
+		
+		for(Map<String,Object> m: list){
+			String return_type = m.get("RETURN_TYPE").toString();
+			
+			if ("geojson".equals(return_type)){
+				m.put("URL", "http://localhost:8080/datasource/geojson?service_id="+m.get("PID"));
+			}else if("json".equals(return_type)){
+				m.put("URL", "http://localhost:8080/datasource/json?service_id="+m.get("PID"));
+			}else if("vector".equals(return_type)){
+				m.put("URL", "http://localhost:8080/datasource/{z}/{x}/{y}?service_id="+m.get("PID")+"&layer_name="+m.get("source_name"));
+			}
+		}
+		
+		return list;
+	}
+	
+	
+	public void add_service(JSONObject json){
+		
+		String source_name = json.getString("source_name");
+		JSONArray ja_cols = json.getJSONArray("cols");
+		String return_type = json.getString("return_type");
+		String describe = json.getString("describe");
+		
+		
+		StringBuilder sb = new StringBuilder(ja_cols.getString(0));
+		
+		for(int i=1;i<ja_cols.size();i++){
+			sb.append(",");
+			sb.append(ja_cols.getString(i));
+		}
+		
+		String cols = sb.toString();
+		
+		String sql = "insert into data_service(pid,is_group,source_name,return_type,cols,describe) values (?,?,?,?,?,?)";
+		
+		jdbc.update(sql, new Date().getTime(),0,source_name,return_type,cols,describe);
+		
+	}
+	
+	public List<Map<String,Object>> list_task(){
+		String sql = "select * from transdata_task";
+		
+		return jdbc.queryForList(sql);
+	}
+	
+	
+	public void trans(JSONObject jsonTab){
+		 try {
+			String jdbc_url = jsonTab.getString("jdbc_url");
+			 String username = jsonTab.getString("username");
+			 String password = jsonTab.getString("password");
+			 String source_tab_name = jsonTab.getString("source_tab_name");
+			 String tab_name = jsonTab.getString("tab_name");
+			 long pid = new Date().getTime();
+			 
+			 String initsql = "insert into transdata_task(pid,jdbc_url,username,password,source_tab_name,tab_name,status) values (?,?,?,?,?,?,?)";
+			 
+			 
+			 
+			 jdbc.update(initsql, pid,jdbc_url,username,password,source_tab_name,tab_name,"进行中");
+			
+			String sql = "insert into "+tab_name+" select * from "+source_tab_name;
+			
+			jdbc.execute(sql);
+			
+			String finishsql = "update transdata_task set status=? where pid=?";
+			
+			jdbc.update(finishsql, "完成",pid);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public String getStyles(int style_pid){
+		String sql = "select * from datavis_style where style_pid=?";
+		
+		
+		Map<String,Object> result = jdbc.queryForMap(sql, style_pid);
+		
+		String styles = result.get("styles").toString();
+		
+		
+		JSONArray ja = JSONArray.parseArray(styles);
+		
+		JSONObject jo = new JSONObject();
+		
+		jo.put("describe", result.get("describe").toString());
+		
+		jo.put("styles", ja);
+		
+		return jo.toJSONString();
+	}
 
 	public List<Map<String, Object>> getDataSourceList() {
 
@@ -46,7 +189,7 @@ public class OracleDao {
 
 	}
 
-	public String generateSql(int gid, String cond_value) {
+	public String generateSql(long gid, String cond_value) {
 		StringBuilder sb = new StringBuilder("select ");
 
 		List<Map<String, Object>> list = jdbc.queryForList(
@@ -61,7 +204,7 @@ public class OracleDao {
 				if (!"vector".equals(return_type))
 					sb.append(map
 							.get("cols")
-							.toString()
+							.toString().toLowerCase()
 							.replace("geometry",
 									"sdo_util.to_wktgeometry_varchar(geometry) as geometry"));
 				else
@@ -253,7 +396,7 @@ public class OracleDao {
 
 	}
 
-	public List<Map<String, Object>> getGeojson(int service_pid,
+	public List<Map<String, Object>> getGeojson(long service_pid,
 			String cond_value) {
 
 		String sql = this.generateSql(service_pid, cond_value);
@@ -408,7 +551,7 @@ public class OracleDao {
 
 		for (Map<String, Object> map : list) {
 			
-			String mb_source = map.get("mb_source").toString();
+			String mb_source = map.get("mb_source")!=null ? map.get("mb_source").toString():null;
 			String lauch_name = map.get("lauch_name").toString();
 			
 			if (mb_source!= null && mb_source.length()>0){
@@ -556,6 +699,13 @@ public class OracleDao {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	
+	
+	//创建表
+	public void create_table(String sql){
+		jdbc.execute(sql);
 	}
 
 }

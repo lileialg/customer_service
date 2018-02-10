@@ -39,8 +39,16 @@ public class ODataSource {
 	}
 	
 	
+	@RequestMapping(value = "/style")
+	public String getStyle(int style_pid){
+		return dao.getStyles(style_pid);
+	}
+	
+	
+	
+	
 	@RequestMapping(value = "/geojson")
-	public Map<String,Object> geojson(int service_id,String cond_value){
+	public Map<String,Object> geojson(long service_id,String cond_value){
 
 		Map<String,Object> map = new HashMap<String,Object>();
 		
@@ -73,7 +81,7 @@ public class ODataSource {
 	
 	
 	@RequestMapping(value = "/json")
-	public List<Map<String,Object>> json(int service_id,String cond_value){
+	public List<Map<String,Object>> json(long service_id,String cond_value){
 
 		
 		List<Map<String,Object>> list = dao.getGeojson(service_id, cond_value);
@@ -98,7 +106,7 @@ public class ODataSource {
 //	}
 	
 	
-	@RequestMapping(value = "/{z}/{x}/{y}",produces = "aapplication/x-protobuf")
+	@RequestMapping(value = "/{z}/{x}/{y}",produces = "application/x-protobuf")
 	public byte[] getSum(@PathVariable int x, @PathVariable int y,
 			@PathVariable int z,int service_id,String cond_value,String layer_name) {
 		

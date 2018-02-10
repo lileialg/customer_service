@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Bootstrap 实例 - 基本的表格</title>
+<link rel="stylesheet"
+	href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+<script
+	src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+<script
+	src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+</head>
+
+<body>
+
+	<nav class="navbar navbar-default" role="navigation">
+		<div class="container-fluid">
+
+			<div>
+				<ul class="nav navbar-nav">
+					<li><a href="./add_schema.html">添加schema</a></li>
+					<li><a href="./custom_data.html">定制接入数据</a></li>
+					<li><a href="./list_task.html">任务列表</a></li>
+					<li><a href="./list_data.html">数据列表</a></li>
+					<li><a href="./custom_service.html">定制服务</a></li>
+					<li><a href="./list_service.html">服务列表</a></li>
+					<li><a href="./list_bg_mb.html">底图模板列表</a></li>
+					<li><a href="./list_style.html">样式模板</a></li>
+					<li><a href="./custom_vis.html">定制可视化</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+	<div class="container">
+
+
+		<table class="table" id="tab1" style="width: 60%;">
+			<caption>底图模板列表</caption>
+			<thead>
+				<tr>
+					<th>描述</th>
+					<th>查看</th>
+				</tr>
+			</thead>
+			<tbody id="tbody1">
+
+
+			</tbody>
+		</table>
+
+	</div>
+	<script type="text/javascript">
+		var tab_name = ""
+		var describe = ""
+		var attrs = []
+
+		$(function() {
+
+			//http://localhost:8080/datasource/ds
+
+			$.get("http://localhost:8080/cj/list_style", function(result) {
+
+				result.forEach(function(r) {
+
+					$("#tbody1").append(
+							"<tr><td>"+r.DESCRIBE+"</td><td><img width='100px' height='70px' src='http://localhost:8080/style_solvtu/"+r.SUOLVTU+"'/></td></tr>")
+
+				})
+			})
+
+			
+
+		});
+	</script>
+</body>
+</html>
