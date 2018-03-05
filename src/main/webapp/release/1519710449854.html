@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8' />
+<title>Display a map</title>
+<meta name='viewport'
+	content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+	<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/echarts.min.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts-gl/echarts-gl.min.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts-stat/ecStat.min.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/extension/dataTool.min.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/china.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/world.js"></script>
+       <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=ZUONbpqGBsYGXNIYHicvbAbM"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/extension/bmap.min.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/simplex.js"></script>
+	
+<script src='../dist/mapbox-gl-dev.js'></script>
+<link href='../dist/mapbox-gl.css' rel='stylesheet' />
+<link rel="stylesheet"
+	href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+<script
+	src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+<script
+	src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<style>
+<style>
+body {
+	margin: 0;
+	padding: 0;
+}
+
+#map {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 100%;
+}
+.report {
+    font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    position: absolute;
+    width: 500px;
+    height: 300px;
+    bottom: 20px;
+    right: 20px;
+}
+
+</style>
+
+</head>
+<body>
+<div id='map'></div>
+	<div class='report top' id='container'>
+   
+	</div>
+<script>
+ var simple = 
+{"version":8,"name":"Bright","sources":{"mp":{"type":"raster","tiles":["https://a.tiles.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}@2x.webp?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA"],"tileSize":256}},"sprite":"http://localhost:8080/sprites/sprite","glyphs":"http://localhost:8080/glyphs/{fontstack}/{range}.pbf","layers":[{"id":"background","type":"background","paint":{"background-color":"#654321"},"interactive":true},{"id":"route","type":"raster","source":"mp","paint":{}}]}
+var map = new mapboxgl.Map({
+container: 'map',
+style : simple,
+center: [-120.0, 50.0],
+zoom: 2.0
+,pitch :0.0
+})
+map.on('load', function() {
+map.addSource('myearth1', 
+{"cluster":false,"data":"http://localhost:8080/datasource/geojson?service_id=1518162192584","type":"geojson"}
+)
+map.addLayer(
+{"maxzoom":9,"paint":{"heatmap-color":["interpolate",["linear"],["heatmap-density"],0,"rgba(33,102,172,0)",0.2,"rgb(103,169,207)",0.4,"rgb(209,229,240)",0.6,"rgb(253,219,199)",0.8,"rgb(239,138,98)",1,"rgb(178,24,43)"],"heatmap-opacity":["interpolate",["linear"],["zoom"],7,1,9,0],"heatmap-weight":["interpolate",["linear"],["get","mag"],0,0,6,1],"heatmap-intensity":["interpolate",["linear"],["zoom"],0,5,9,8],"heatmap-radius":["interpolate",["linear"],["zoom"],0,2,9,20]},"id":"earthquakes-heat","source":"myearth1","type":"heatmap"}
+)
+map.addLayer(
+{"paint":{"circle-stroke-width":1,"circle-color":["interpolate",["linear"],["get","mag"],1,"rgba(33,102,172,0)",2,"rgb(103,169,207)",3,"rgb(209,229,240)",4,"rgb(253,219,199)",5,"rgb(239,138,98)",6,"rgb(178,24,43)"],"circle-stroke-color":"white","circle-opacity":["interpolate",["linear"],["zoom"],7,0,8,1],"circle-radius":["interpolate",["linear"],["zoom"],7,["interpolate",["linear"],["get","mag"],1,1,6,4],16,["interpolate",["linear"],["get","mag"],1,5,6,50]]},"id":"earthquakes-point","source":"myearth1","type":"circle","minzoom":7}
+)
+})
+
+
+var dom = document.getElementById("container");
+var myChart = echarts.init(dom);
+var app = {};
+option=null
+option={"yAxis":{"type":"value"},"xAxis":{"data":[595665,605623,595662,595653,595652,605607,605613,605517,605772,605604,595577,595645,595657,605635,595664,615633,605640,615601,595640,595654,595547,605654,605546,605770,595544,595554,615701,615702,615614,595553,595546,605576,605601,595646,595670,605507,605731,605612,595642,595643,595623,595633,595575,605760,595533,605537,615626,605503,605752,605555,615623,605515,615612,605710,605632,605711,605646,605602,595647,605672,595632,595612,605645,605663,605676,595620,595565,615607,595631,605740,605637,595543,615703,605603,595672,605557,605622,605614,605642,605600,595666,605660,605516,605556,605750,595545,595557,595621,595641,605761,595564,595567,605506,605741,595624,595677,595566,595555,615635,605662,615617,605722,605616,605624,605631,595675,605720,595661,605641,595671,605730,605647,595673,605605,595636,595527,595667,605652,605566,605630,605644,595573,615605,615604,595526,605742,605763,615613,605670,615606,605565,605615,605732,605625,605621,605547,605661,595635,615602,605655,595634,595676,595525,595537,595650,605677,595613,605567,605643,605656,605653,605666,605505,605527,595576,605773,605674,595536,605665,615615,615616,595740,605751,605673,605700,605611,605721,595655,605627,605657,605636,605650,595651,595674,595750,595622,615645,615624,615634,595770,615625,595574,605504,595534,595760,605771,615644,605762,595656,605633,605617,605610,605626,605651,595663,605620,605606,595660,615603,605671,605634,595644,605675,595630,595556,605667,605664,595535,615622],"type":"category"},"series":[{"data":[8659,1335,28729,7104,7137,223,1959,36,110,4100,93,459,1078,3988,8737,22,143,3,1623,4984,2116,210,136,95,74,45,127,32,50,47,48,9,1486,555,2221,93,64,3410,3945,1505,254,510,162,167,16,15,11,6,3,2,27,1,1,3111,190,576,5048,13977,846,21,556,1744,1550,113,73,329,81,17,356,129,108,187,15,8481,36089,2996,1962,2259,224,271,615,342,15,181,82,68,469,160,2963,355,43,25,57,128,343,644,50,50,11,46,7,360,885,945,509,3269,344,5738,111,4746,183,520,42534,1372,758,637,1557,66,24,134,544,42,128,91,317,42,3,39,14,4,9,5916,92,1342,5808,577,388,895,75,228,282,4947,276,575,523,70,114,112,127,423,80,137,13,28,36,101,51,131,59,58,55,558,52,10,376,1310,348,980,132,153,273,553,2295,6620,2465,351,8,52,41,2866,42,76,32,297,213,94,3,1,1275,53,497,270,462,75,40531,366,465,634,68,35,594,1279,141,1019,134,104,59,166,21],"type":"line"}]}
+
+if (option && typeof option === "object") {
+    myChart.setOption(option, true);
+}
+
+
+</script>
+
+</body>
+</html>

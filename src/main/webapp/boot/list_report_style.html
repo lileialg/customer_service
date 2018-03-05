@@ -37,7 +37,7 @@
 
 
 		<table class="table" id="tab1" style="width: 60%;">
-			<caption>底图模板列表</caption>
+			<caption>报表样式</caption>
 			<thead>
 				<tr>
 					<th>描述</th>
@@ -60,12 +60,12 @@
 
 			//http://localhost:8080/datasource/ds
 
-			$.get("http://localhost:8080/cj/list_bg_mb", function(result) {
+			$.get("http://localhost:8080/cj/list_report_style_mb", function(result) {
 
 				result.forEach(function(r) {
 
 					$("#tbody1").append(
-							"<tr><td>"+r.DESCRIBE+"</td><td><a href='http://localhost:8080/bg_mb/"+r.MB_SOURCE+"'>查看</a></td></tr>")
+							"<tr><td>"+r.DESCRIBE+"</td><td><img width='100px' height='70px' src='http://localhost:8080/style_solvtu_report/"+r.SUOLVTU+"'/></td></tr>")
 
 				})
 			})

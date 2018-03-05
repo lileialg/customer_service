@@ -1,10 +1,15 @@
 package custom.control;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,7 +24,7 @@ import custom.dao.OracleDao;
 @RequestMapping(value = "/cj")
 public class C2 {
 	@RequestMapping("/release_vis")
-	public Map<String,Object> release_vis(String ditu_style,String data_source,String layers){
+	public Map<String,Object> release_vis(String ditu_style,String data_source,String layers,String map_cfg,String option){
 		
 		Map<String,Object> map = new HashMap<String,Object>();
 		
@@ -27,9 +32,79 @@ public class C2 {
 		System.out.println(data_source);
 		System.out.println(layers);
 		
+		long id = new Date().getTime();
+		
+		JSONObject json_data_source = JSONObject.parseObject(data_source);
+		String source_name = json_data_source.getString("my_source_name");
+		JSONObject source_value = json_data_source.getJSONObject("my_source_value");
+		JSONObject json_map_cfg = JSONObject.parseObject(map_cfg);
+		
+		JSONArray jaLayers = JSONArray.parseArray(layers);
+		
+		try {
+			PrintWriter out = new PrintWriter(new FileOutputStream("C:/Users/lilei3774/workspace-4.2/custom/src/main/webapp/release/"+id+".html"));
+			
+			Scanner scanner = new Scanner(new FileInputStream("C:/Users/lilei3774/workspace-4.2/custom/src/main/webapp/vis_mb.html"));
+			
+			int row = 0;
+			
+			while(scanner.hasNextLine()){
+				row++;
+				
+				String line = scanner.nextLine();
+				
+				out.println(line);
+				
+				if (row==56){
+					out.println(" var simple = ");
+					out.println(ditu_style);
+//					var map = new mapboxgl.Map({
+//					    container: 'map',
+//					    style : simple,
+//					    center: [-120, 50],
+//					    zoom: 2
+//					});
+					out.println("var map = new mapboxgl.Map({");
+					out.println("container: 'map',");
+					out.println("style : simple,");
+					out.println("center: ["+json_map_cfg.getDoubleValue("lng")+", "+json_map_cfg.getDoubleValue("lat")+"],");
+					out.println("zoom: "+json_map_cfg.getDoubleValue("zoom"));
+					out.println(",pitch :"+ json_map_cfg.getDoubleValue("pitch"));
+					out.println("})");
+					
+					out.println("map.on('load', function() {");
+					out.println("map.addSource('"+source_name+"', ");
+					out.println(source_value);
+					out.println(")");
+					
+					for(int i=0;i<jaLayers.size();i++){
+						out.println("map.addLayer(");
+						out.println(jaLayers.getJSONObject(i));
+						out.println(")");
+					}
+					
+					out.println("})");
+					
+					
+				}else if ("option=null".equals(line)){
+					out.println("option="+JSONObject.parseObject(option));
+				}
+			}
+			
+			out.flush();
+			
+			out.close();
+			
+			scanner.close();
+			
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		map.put("result", "success");
 		
-		map.put("address", "http://www.baidu.com");
+		map.put("address", "http://localhost:8080/release/"+id+".html");
 		
 		return map;
 		
@@ -50,6 +125,13 @@ public class C2 {
 	@RequestMapping("/get_bg_cfg")
 	public Map<String,Object> get_bg_cfg(long id){
 		return dao.get_bg_cfg(id);
+	}
+	
+	
+	@RequestMapping("/list_report_style_mb")
+	public List<Map<String,Object>> list_report_style_mb(){
+		
+		return dao.list_style_report_mb();
 	}
 	
 	@RequestMapping("/list_style")
@@ -75,6 +157,8 @@ public class C2 {
 	
 	@RequestMapping("/add_service")
 	public Map<String,Object> add_service(String json){
+		
+		System.out.println(json);
 		
 		JSONObject jo = JSONObject.parseObject(json);
 		
@@ -224,5 +308,16 @@ public class C2 {
 		map.put("result", "任务提交成功");
 		
 		return map;
+	}
+	
+	
+	@RequestMapping("/report_styles")
+	public List<Map<String,Object>> list_report_style(){
+		return dao.list_report_style();
+	}
+	
+	@RequestMapping("/get_report_style")
+	public Map<String,Object> get_report_style_by_pid(int pid){
+		return dao.get_report_style_by_pid(pid);
 	}
 }

@@ -19,6 +19,15 @@ body {
 	bottom: 0;
 	width: 100%;
 }
+
+.report {
+    font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    position: absolute;
+    width: 500px;
+    height: 300px;
+    bottom: 20px;
+    right: 20px;
+}
 </style>
 
 <script type="text/javascript">
@@ -70,6 +79,9 @@ body {
 <body>
 
 	<div id='map'></div>
+	<div class='report top' id='container'>
+   
+	</div>
 	<script>
 		var map = new mapboxgl.Map({
 			container : 'map', // container id

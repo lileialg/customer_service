@@ -34,6 +34,19 @@ public class OracleDao {
 	protected JdbcTemplate jdbc;
 	
 	
+	public List<Map<String,Object>> list_report_style(){
+		String sql = " select pid,describe from report_style ";
+		
+		return jdbc.queryForList(sql);
+	}
+	
+	public Map<String,Object> get_report_style_by_pid(int pid){
+		String sql = "select options from report_style where pid=?";
+		
+		return jdbc.queryForMap(sql,pid);
+	}
+	
+	
 	public Map<String,Object> get_source(long pid){
 		String sql = "select * from data_service where pid=?";
 		
@@ -73,6 +86,12 @@ public class OracleDao {
 		return jdbc.queryForList(sql);
 	}
 	
+	public List<Map<String,Object>> list_style_report_mb(){
+		String sql = "select describe,suolvtu from report_style";
+		
+		return jdbc.queryForList(sql);
+	}
+	
 	
 	public List<Map<String,Object>> list_service(){
 		String sql = "select * from data_service where return_type is not null";
@@ -102,6 +121,19 @@ public class OracleDao {
 		String return_type = json.getString("return_type");
 		String describe = json.getString("describe");
 		
+		JSONArray ja_condition = json.getJSONArray("conditions"); 
+		JSONArray ja_group = json.getJSONArray("group_array");
+		JSONArray ja_stat = json.getJSONArray("statistics");
+		
+		StringBuilder sb_group = new StringBuilder();
+		for(int i=0;i<ja_group.size();i++){
+			if (i>0)
+				sb_group.append(",");
+			sb_group.append(ja_group.getString(i));
+		}
+		
+		String group_cols = sb_group.length()>0?sb_group.toString():null;
+		
 		
 		StringBuilder sb = new StringBuilder(ja_cols.getString(0));
 		
@@ -112,9 +144,28 @@ public class OracleDao {
 		
 		String cols = sb.toString();
 		
-		String sql = "insert into data_service(pid,is_group,source_name,return_type,cols,describe) values (?,?,?,?,?,?)";
+		long pid = new Date().getTime();
 		
-		jdbc.update(sql, new Date().getTime(),0,source_name,return_type,cols,describe);
+		String sql = "insert into data_service(pid,is_group,source_name,return_type,cols,describe,group_cols) values (?,?,?,?,?,?,?)";
+		
+		
+		if (ja_group.size()>0){
+			jdbc.update(sql, pid,1,source_name,return_type,cols,describe,group_cols);
+		}else{
+			jdbc.update(sql, pid,0,source_name,return_type,cols,describe,group_cols);
+		}
+		
+		if (ja_condition.size()>0){
+			
+		}
+		
+		if (ja_group.size()>0){
+			sql = "insert into group_info(pid,group_value) values (?,?)";
+			for(int i=0;i<ja_stat.size();i++){
+				jdbc.update(sql, pid,ja_stat.getString(i));
+			
+			}
+		}
 		
 	}
 	
@@ -442,7 +493,7 @@ public class OracleDao {
 //		return ja.toString();
 //	}
 
-	public List<Map<String, Object>> getProtoBuf(int service_pid,
+	public List<Map<String, Object>> getProtoBuf(long service_pid,
 			String cond_value, String wkt) {
 
 		String sql = this.generateSql(service_pid, cond_value);

@@ -1,5 +1,6 @@
 package custom.control;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -108,9 +109,10 @@ public class ODataSource {
 	
 	@RequestMapping(value = "/{z}/{x}/{y}",produces = "application/x-protobuf")
 	public byte[] getSum(@PathVariable int x, @PathVariable int y,
-			@PathVariable int z,int service_id,String cond_value,String layer_name) {
+			@PathVariable int z,long service_id,String cond_value,String layer_name) {
 		
 		String tile = TileUtils.parseXyz2Bound(x, y, z);
+		
 		
 		List<Map<String,Object>> list = dao.getProtoBuf(service_id, cond_value, tile);
 		VectorTileEncoder vte = new VectorTileEncoder(4096, 16, false);
@@ -129,6 +131,12 @@ public class ODataSource {
 			
 			map.remove("geometry2");
 			map.remove("geometry");
+			
+			for(Map.Entry<String, Object> en : map.entrySet()){
+				if (en.getValue() instanceof BigDecimal){
+					map.put(en.getKey(), ((BigDecimal)en.getValue()).intValue());
+				}
+			}
 			
 			vte.addFeature(layer_name, map, geom);
 		}

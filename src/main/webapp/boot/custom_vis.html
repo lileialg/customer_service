@@ -28,6 +28,7 @@
 					<li><a href="./list_service.html">服务列表</a></li>
 					<li><a href="./list_bg_mb.html">底图模板列表</a></li>
 					<li><a href="./list_style.html">样式模板</a></li>
+					<li><a href="./list_report_style.html">报表样式模板</a></li>
 					<li><a href="./custom_vis.html">定制可视化</a></li>
 				</ul>
 			</div>
@@ -57,7 +58,8 @@
 			<thead>
 				<tr>
 					<th>描述</th>
-					<th>选择</th>
+					<th>地图数据源选择</th>
+					<th>报表数据源选择</th>
 				</tr>
 			</thead>
 			<tbody id="tbody2">
@@ -75,6 +77,31 @@
 			</thead>
 			<tbody id="tbody3">
 				
+			</tbody>
+		</table>
+		
+		<table class="table" id="tab4">
+			<caption>报表样式选择</caption>
+			<thead>
+				<tr>
+					<th>描述</th>
+					<th>选择</th>
+				</tr>
+			</thead>
+			<tbody id="tbody4">
+			<!-- 
+				<tr>
+					<th>折线</th>
+					<th><input type="radio" name="report_type" value="line"></th>
+				</tr>
+				<tr>
+					<th>柱状图</th>
+					<th><input type="radio" name="report_type" value="bar"></th>
+				</tr>
+				<tr>
+					<th>饼图</th>
+					<th><input type="radio" name="report_type" value="pie"></th>
+				</tr> -->
 			</tbody>
 		</table>
 	</div>
@@ -99,7 +126,7 @@
 				result.forEach(function(r) {
 
 					$("#tbody2").append(
-							"<tr><td>"+r.DESCRIBE+"</td><td><input type='radio' name='data_service' value="+r.PID+"></td></tr>")
+							"<tr><td>"+r.DESCRIBE+"</td><td><input type='radio' name='data_service' value="+r.PID+"></td><td><input type='radio' name='report_data_service' value="+r.PID+"></td></tr>")
 
 				})
 			})
@@ -114,12 +141,44 @@
 				})
 			})
 			
+			
+			$.get("http://localhost:8080/cj/report_styles", function(result) {
+
+				result.forEach(function(r) {
+
+					$("#tbody4").append(
+							"<tr><td>"+r.DESCRIBE+"</td><td><input type='radio' name='report_type' value="+r.PID+"></td></tr>")
+
+				})
+			})
+			
+			
+			
 			$("#fat-btn").on('click', function() {
 
 				var mb_id = $("input[name='bg_mb']:checked").val();
 				var source_id = $("input[name='data_service']:checked").val();
 				var style_id = $("input[name='data_style']:checked").val();
-				$("#myframe").attr('src','edit.html?mb_id='+mb_id+'&source_id='+source_id+"&style_id="+style_id)
+				
+				var report_type = $("input[name='report_type']:checked").val();
+				var report_data_service = $("input[name='report_data_service']:checked").val();
+				
+				if (report_type){
+					if (style_id === "2"){
+						$("#myframe").attr('src','edit.html?is_cluster=true&mb_id='+mb_id+'&source_id='+source_id+"&style_id="+style_id+"&report_type="+report_type+"&report_data_service="+report_data_service)
+					}else{
+						$("#myframe").attr('src','edit.html?mb_id='+mb_id+'&source_id='+source_id+"&style_id="+style_id+"&report_type="+report_type+"&report_data_service="+report_data_service)
+					}
+				}else{
+					if (style_id === "2"){
+						$("#myframe").attr('src','edit.html?is_cluster=true&mb_id='+mb_id+'&source_id='+source_id+"&style_id="+style_id)
+					}else{
+						$("#myframe").attr('src','edit.html?mb_id='+mb_id+'&source_id='+source_id+"&style_id="+style_id)
+					}
+					
+				}
+				
+				
 			})
 			
 		});

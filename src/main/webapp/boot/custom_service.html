@@ -29,7 +29,7 @@
 																+ c.COLUMN_NAME
 																+ "</td><td>"
 																+ c.DATA_TYPE
-																+ "</td><td><input type='text' id='"+c.COLUMN_NAME+"_filter'/></td><td><input type='checkbox' name='choose_column' value='"+c.COLUMN_NAME+"'/></td></tr>");
+																+ "</td><td><input type='text' id='filter_"+c.COLUMN_NAME+"'/></td><td><input type='checkbox' name='choose_column' value='"+c.COLUMN_NAME+"'/></td><td><input type='checkbox' name='sort_column' value='"+c.COLUMN_NAME+"'/></td><td><input type='checkbox' name='group_column' value='"+c.COLUMN_NAME+"'/></td><td><input type='text' id='stat_"+c.COLUMN_NAME+"'/></td></tr>");
 									})
 						})
 	}
@@ -51,6 +51,8 @@
 					<li><a href="./list_service.html">服务列表</a></li>
 					<li><a href="./list_bg_mb.html">底图模板列表</a></li>
 					<li><a href="./list_style.html">样式模板</a></li>
+					<li><a href="./list_report_style.html">报表样式模板</a></li>
+					<li><a href="./custom_vis.html">定制可视化</a></li>
 				</ul>
 			</div>
 		</div>
@@ -169,6 +171,41 @@
 				obj.cols = checkedArray
 				obj.source_name = tab_name
 				obj.describe = $("#describe").val()
+				
+				
+				var filters = $("input[id^=filter]").get()
+				
+				var conditions = []
+				
+				filters.forEach(function(f){
+					if (f.value){
+						conditions.push(f.id.split("_")[1]+f.value)
+					}
+				})
+				
+				
+				var groupArray = []
+				 $('[name=group_column]:checkbox:checked').each(function() {
+					 	groupArray.push($(this).val());
+					                      
+					});
+				
+				
+				var stats = $("input[id^=stat]").get()
+				
+				var statistics = []
+				
+				stats.forEach(function(f){
+					if (f.value){
+						statistics.push(f.value)
+					}
+				})
+				
+				obj.conditions = conditions
+				obj.group_array = groupArray
+				obj.statistics = statistics
+				
+				
 				
 				$.post("http://localhost:8080/cj/add_service",{
 					json:JSON.stringify(obj)

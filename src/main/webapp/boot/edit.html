@@ -5,6 +5,16 @@
 <title>Display a map</title>
 <meta name='viewport'
 	content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+	
+	<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/echarts.min.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts-gl/echarts-gl.min.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts-stat/ecStat.min.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/extension/dataTool.min.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/china.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/world.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/extension/bmap.min.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/simplex.js"></script>
+	
 <script src='../dist/mapbox-gl-dev.js'></script>
 <link href='../dist/mapbox-gl.css' rel='stylesheet' />
 <link rel="stylesheet"
@@ -78,6 +88,28 @@ body {
 .map-overlay-inner button:hover {
 	box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.10);
 }
+
+.report {
+    font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    position: absolute;
+    width: 500px;
+    height: 300px;
+    bottom: 20px;
+    right: 20px;
+    background-color: rgba(0,255,0,0.5);
+}
+
+
+.report-setup {
+    font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    position: absolute;
+    width: 250px;
+    top: 2px;
+    left: 280px;
+    background-color: rgba(255,255,255,1);
+}
+
+
 </style>
 
 
@@ -90,51 +122,93 @@ body {
 			<input type="button" id="release" value="发布"/>
 			<span id="vis_address"></span>
 			<table id="adjust_param" border=1>
-
+				<tr><td>经度</td><td><input type='text' id='lng' onblur='paint_change(this)'></td></tr>
+				<tr><td>纬度</td><td><input type='text' id='lat' onblur='paint_change(this)'></td></tr>
+				<tr><td>ZOOM</td><td><input type='text' id='zoom' onblur='paint_change(this)'></td></tr>
 			</table>
 		</div>
 	</div>
-	<script>
 	
+	<div class='report top' id='container'>
+   
+	</div>
+	
+	<div class='report-setup top' id='report-set'>
+   		<table id="adjust_param_report" border=1>
+		</table>
+	</div>
+	<script>
+	function getUrlParam(name) {
+		var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+		var r = window.location.search.substr(1).match(reg); //匹配目标参数
+		if (r != null)
+			return unescape(r[2]);
+		return null; //返回参数值
+	}
+
+	var mb_id = getUrlParam("mb_id")
+	var source_id = getUrlParam("source_id")
+	var style_id = getUrlParam("style_id")
+	
+	var is_cluster = Boolean(getUrlParam("is_cluster"))
+	
+	var report_pid = getUrlParam("report_type")
+	var report_data_service = getUrlParam("report_data_service")
+	
+	var option = null
+	
+
+	var mystyle = {}
+	
+	var mylayers = []
+	
+	//var my_source_name = ""
+	var my_source_value = {}
+
+	var source_name = ""
 	
 
 	var layers = {}
 	var styles = []
 	var map = {}
+	
+	function paint_change_report(e){
+		var key = e.id.split("_")[1]
+		option[key] = JSON.parse(e.value)
+		
+		var dom = document.getElementById("container");
+						var myChart = echarts.init(dom);
+						var app = {};
+						
+						if (option && typeof option === "object") {
+						    myChart.setOption(option, true);
+						}
+	}
+	
 	function paint_change(e){
-		var ps = (e.id).split("_")
-		var layer_id = ps[0]
-		var indx = parseInt(ps[1])
-		var pname = ps[2]
-		console.log(pname)
 		
-		eval("styles[indx].paint['"+pname+"']=JSON.parse(e.value)")
-		
-		map.setPaintProperty(layer_id,pname,JSON.parse(e.value))
+		if(e.id === 'lng'){
+			map.setCenter({'lng':Number(e.value),'lat':map.getCenter().lat})
+		}else if (e.id === 'lat'){
+			map.setCenter({'lng':map.getCenter().lng,'lat':Number(e.value)})
+		}else if (e.id === 'zoom'){
+			map.setZoom(Number(e.value))
+		}else{
+			var ps = (e.id).split("_")
+			var layer_id = ps[0]
+			var indx = parseInt(ps[1])
+			var pname = ps[2]
+			console.log(pname)
+			
+			eval("styles[indx].paint['"+pname+"']=JSON.parse(e.value)")
+			
+			map.setPaintProperty(layer_id,pname,JSON.parse(e.value))
+		}
 	}
 	
 	
 	
-		function getUrlParam(name) {
-			var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
-			var r = window.location.search.substr(1).match(reg); //匹配目标参数
-			if (r != null)
-				return unescape(r[2]);
-			return null; //返回参数值
-		}
-
-		var mb_id = getUrlParam("mb_id")
-		var source_id = getUrlParam("source_id")
-		var style_id = getUrlParam("style_id")
-
-		var mystyle = {}
 		
-		var mylayers = []
-		
-		//var my_source_name = ""
-		var my_source_value = {}
-
-		var source_name = ""
 		
 			$("#release").on("click",function(){
 				console.log(mystyle)
@@ -148,13 +222,28 @@ body {
 				console.log(mylayers)
 				
 				
-				$.post("http://localhost:8080/cj/release_vis",{
-					ditu_style:JSON.stringify(mystyle),
-					data_source:JSON.stringify(tmpsourceobj),
-					layers: JSON.stringify(mylayers)
-				},function(r){
-					$("#vis_address").html("<a href='"+r.address+"' target='_blank'>打开</a>")
-				})
+				if (option && typeof option === "object") {
+					$.post("http://localhost:8080/cj/release_vis",{
+						ditu_style:JSON.stringify(mystyle),
+						data_source:JSON.stringify(tmpsourceobj),
+						layers: JSON.stringify(mylayers),
+						map_cfg: JSON.stringify({'lng':map.getCenter().lng,'lat':map.getCenter().lat,'zoom':map.getZoom(),'pitch':map.getPitch()}),
+						option: JSON.stringify(option)		
+					},function(r){
+						$("#vis_address").html("<a href='"+r.address+"' target='_blank'>打开</a>")
+					})
+				}else{
+					$.post("http://localhost:8080/cj/release_vis",{
+						ditu_style:JSON.stringify(mystyle),
+						data_source:JSON.stringify(tmpsourceobj),
+						layers: JSON.stringify(mylayers),
+						map_cfg: JSON.stringify({'lng':map.getCenter().lng,'lat':map.getCenter().lat,'zoom':map.getZoom(),'pitch':map.getPitch()})
+					},function(r){
+						$("#vis_address").html("<a href='"+r.address+"' target='_blank'>打开</a>")
+					})		
+							
+				}
+				
 				
 			})
 
@@ -170,7 +259,7 @@ body {
 
 			});
 			
-
+			map.on('load', function() {
 
 			$.get("http://localhost:8080/cj/get_source?id=" + source_id,
 					function(s) {
@@ -178,17 +267,29 @@ body {
 						var return_type = s.RETURN_TYPE
 						source_name = s.SOURCE_NAME
 						if (return_type === "geojson") {
+							
+							
 							map.addSource(s.SOURCE_NAME, {
 								"type" : "geojson",
-								"data" : s.URL
+								"data" : s.URL,
+								"cluster": is_cluster
 							});
 							
 							my_source_value = {
 									"type" : "geojson",
-									"data" : s.URL
+									"data" : s.URL,
+									"cluster": is_cluster
 								}
 						} else if (return_type === "vector") {
-
+							map.addSource(s.SOURCE_NAME, {
+								"type" : "vector",
+								"tiles" : [s.URL]
+							});
+							
+							my_source_value = {
+									"type" : "vector",
+									"tiles" : [s.URL]
+								}
 						}
 
 						$.get(
@@ -241,8 +342,179 @@ body {
 								})
 
 					})
+					
+					
+			if(report_pid){
+				
+				//获取报表数据服务
+				$.get("http://localhost:8080/datasource/json?service_id="+report_data_service,function(dt){
+					
+					var x_data = []
+					var y_data = []
+					var xy_data = []
+					
+					if(report_pid === "1"){
+						//line
+						var idx = 0
+						dt.forEach(function(r){
+							
+							for(var key in r){
+								if (idx === 0){
+									
+									x_data.push(r[key])
+									
+									idx = 1
+								}else{
+									y_data.push(r[key])
+									idx = 0
+								}
+							}
+							
+						})
+						
+						
+						
+					}else if (report_pid === "2"){
+						//bar
+						var idx = 0
+						dt.forEach(function(r){
+							
+							for(var key in r){
+								if (idx === 0){
+									
+									x_data.push(r[key])
+									
+									idx = 1
+								}else{
+									y_data.push(r[key])
+									idx = 0
+								}
+							}
+							
+						})
+						
+					}else if(report_pid === "3"){
+						//pie
+						
+						var idx = 0
+						dt.forEach(function(r){
+							var tmp_obj = {}
+							for(var key in r){
+								if (idx === 0){
+									
+									tmp_obj.value = r[key]
+									
+									idx = 1
+								}else{
+									tmp_obj.name = r[key]
+									idx = 0
+								}
+							}
+							
+							xy_data.push(tmp_obj)
+						})
+					}
+					
+					$.get("http://localhost:8080/cj/get_report_style?pid="+report_pid,function(op){
+						eval(op.OPTIONS)
+						var dom = document.getElementById("container");
+						var myChart = echarts.init(dom);
+						var app = {};
+						
+						if (option && typeof option === "object") {
+						    myChart.setOption(option, true);
+						    
+						    
+						    for(var key in option){
+						    	$("#adjust_param_report").append("<tr><td>"+key+"</td><td><input type='text' size='30' value='"+JSON.stringify(option[key])+"' onblur='paint_change_report(this)' id='report_"+key+"'/></td></tr>")
+						    }
+						}
+					})
+					
+					
+					
+					
+				})
+				
+				
+			}		
+					
+					
+					
+					
+					
+					
+					
+					
+					
+/**					
+					
+					var dom = document.getElementById("container");
+var myChart = echarts.init(dom);
+var app = {};
+option = null;
+app.title = '环形图';
 
-			map.on('load', function() {
+$.get("http://localhost:8080/datasource/json?service_id=1519639825843",function(rp){
+	
+	var legend_data = []
+	var se_data = []
+	rp.forEach(function(m){
+		
+		legend_data.push(m.mesh_id)
+		se_data.push({value:m.co,name:m.mesh_id})
+	})
+	
+	option = {
+		    tooltip: {
+		        trigger: 'item',
+		        formatter: "{a} <br/>{b}: {c} ({d}%)"
+		    },
+		    //backgroundColor: 'rgba(128, 128, 0,0.5)',
+		    legend: {
+		        orient: 'vertical',
+		        x: 'left',
+		        data:legend_data,
+		       
+		    },
+		    series: [
+		        {
+		            name:'访问来源',
+		            type:'pie',
+		            radius: ['50%', '70%'],
+		            avoidLabelOverlap: false,
+		            label: {
+		                normal: {
+		                    show: false,
+		                    position: 'center'
+		                },
+		                emphasis: {
+		                    show: true,
+		                    textStyle: {
+		                        fontSize: '30',
+		                        fontWeight: 'bold'
+		                    }
+		                }
+		            },
+		            labelLine: {
+		                normal: {
+		                    show: false
+		                }
+		            },
+		            data:se_data
+		        }
+		    ]
+		};
+		
+		if (option && typeof option === "object") {
+		    myChart.setOption(option, true);
+		}
+	
+})
+
+*/
+
+			
 
 			});
 
