@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8' />
+<title>Display a map</title>
+<meta name='viewport'
+	content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+	<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/echarts.min.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts-gl/echarts-gl.min.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts-stat/ecStat.min.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/extension/dataTool.min.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/china.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/world.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/extension/bmap.min.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/simplex.js"></script>
+	
+<script src='../dist/mapbox-gl-dev.js'></script>
+<link href='../dist/mapbox-gl.css' rel='stylesheet' />
+<link rel="stylesheet"
+	href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+<script
+	src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+<script
+	src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<style>
+<style>
+body {
+	margin: 0;
+	padding: 0;
+}
+
+#map {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 100%;
+}
+.report {
+    font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    position: absolute;
+    width: 500px;
+    height: 300px;
+    bottom: 20px;
+    right: 20px;
+}
+
+</style>
+
+</head>
+<body>
+<div id='map'></div>
+	<div class='report top' id='container'>
+   
+	</div>
+<script>
+
+ var simple = 
+{"version":8,"name":"Bright","sources":{"gaode":{"type":"raster","tiles":["https://webst02.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}"],"tileSize":256}},"sprite":"http://localhost:8080/sprites/sprite","glyphs":"http://localhost:8080/glyphs/{fontstack}/{range}.pbf","layers":[{"id":"background","type":"background","paint":{"background-color":"#654321"},"interactive":true},{"id":"route","type":"raster","source":"gaode","paint":{}}]}
+var map = new mapboxgl.Map({
+container: 'map',
+style : simple,
+center: [-139.3599968668475, 45.60248693981893],
+zoom: 2.7427967540076907
+,pitch :0.0
+})
+map.on('load', function() {
+map.addSource('myearth1', 
+{"cluster":false,"data":"http://localhost:8080/datasource/geojson?service_id=1518162192584","type":"geojson"}
+)
+map.addLayer(
+{"maxzoom":9,"paint":{"heatmap-color":["interpolate",["linear"],["heatmap-density"],0,"rgba(33,102,172,0)",0.2,"rgb(103,169,207)",0.4,"rgb(209,229,240)",0.6,"rgb(253,219,199)",0.8,"rgb(239,138,98)",1,"rgb(178,24,43)"],"heatmap-opacity":["interpolate",["linear"],["zoom"],7,1,9,0],"heatmap-weight":["interpolate",["linear"],["get","mag"],0,1,6,1],"heatmap-intensity":["interpolate",["linear"],["zoom"],0,5,9,8],"heatmap-radius":["interpolate",["linear"],["zoom"],0,20,9,20]},"id":"earthquakes-heat","source":"myearth1","type":"heatmap"}
+)
+map.addLayer(
+{"paint":{"circle-stroke-width":1,"circle-color":["interpolate",["linear"],["get","mag"],1,"rgba(33,102,172,0)",2,"rgb(103,169,207)",3,"rgb(209,229,240)",4,"rgb(253,219,199)",5,"rgb(239,138,98)",6,"rgb(178,24,43)"],"circle-stroke-color":"white","circle-opacity":["interpolate",["linear"],["zoom"],7,0,8,1],"circle-radius":["interpolate",["linear"],["zoom"],7,["interpolate",["linear"],["get","mag"],1,1,6,4],16,["interpolate",["linear"],["get","mag"],1,5,6,50]]},"id":"earthquakes-point","source":"myearth1","type":"circle","minzoom":7}
+)
+})
+
+var dom = document.getElementById("container");
+var myChart = echarts.init(dom);
+var app = {};
+option=null
+option={"yAxis":{"type":"value"},"xAxis":{"data":[1,2,3,0],"type":"category"},"series":[{"data":[159156,173651,10979,35],"type":"line"}]}
+
+if (option && typeof option === "object") {
+    myChart.setOption(option, true);
+}
+
+
+</script>
+
+</body>
+</html>

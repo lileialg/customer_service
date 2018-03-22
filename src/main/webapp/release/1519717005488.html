@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8' />
+<title>Display a map</title>
+<meta name='viewport'
+	content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+	<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/echarts.min.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts-gl/echarts-gl.min.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts-stat/ecStat.min.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/extension/dataTool.min.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/china.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/world.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/extension/bmap.min.js"></script>
+       <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/simplex.js"></script>
+	
+<script src='../dist/mapbox-gl-dev.js'></script>
+<link href='../dist/mapbox-gl.css' rel='stylesheet' />
+<link rel="stylesheet"
+	href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+<script
+	src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+<script
+	src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<style>
+<style>
+body {
+	margin: 0;
+	padding: 0;
+}
+
+#map {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 100%;
+}
+.report {
+    font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    position: absolute;
+    width: 500px;
+    height: 300px;
+    bottom: 20px;
+    right: 20px;
+}
+
+</style>
+
+</head>
+<body>
+<div id='map'></div>
+	<div class='report top' id='container'>
+   
+	</div>
+<script>
+
+ var simple = 
+{"version":8,"name":"Bright","sources":{"mp":{"type":"raster","tiles":["https://a.tiles.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}@2x.webp?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA"],"tileSize":256}},"sprite":"http://localhost:8080/sprites/sprite","glyphs":"http://localhost:8080/glyphs/{fontstack}/{range}.pbf","layers":[{"id":"background","type":"background","paint":{"background-color":"#654321"},"interactive":true},{"id":"route","type":"raster","source":"mp","paint":{}}]}
+var map = new mapboxgl.Map({
+container: 'map',
+style : simple,
+center: [116.5, 39.5],
+zoom: 14.0
+,pitch :60.0
+})
+map.on('load', function() {
+map.addSource('san_d', 
+{"tiles":["http://localhost:8080/datasource/{z}/{x}/{y}?service_id=20&layer_name=san_d"],"type":"vector"}
+)
+map.addLayer(
+{"paint":{"fill-extrusion-height":["get","HEIGHT"],"fill-extrusion-opacity":0.5,"fill-extrusion-base":["get","BASE_HEIGHT"],"fill-extrusion-color":["get","COLOR"]},"id":"room-extrusion","source-layer":"san_d","source":"san_d","type":"fill-extrusion","source-name":"3d"}
+)
+})
+
+var dom = document.getElementById("container");
+var myChart = echarts.init(dom);
+var app = {};
+option=null
+option={"backgroundColor":"#2c343c","series":[{"data":[{"name":159156,"value":1},{"name":173651,"value":2},{"name":10979,"value":3},{"name":35,"value":0}],"center":["50%","50%"],"name":"访问来源","type":"pie","radius":"55%"}],"title":{"top":20,"left":"center","text":"饼状图","textStyle":{"color":"#ccc"}}}
+
+if (option && typeof option === "object") {
+    myChart.setOption(option, true);
+}
+
+
+</script>
+
+</body>
+</html>
